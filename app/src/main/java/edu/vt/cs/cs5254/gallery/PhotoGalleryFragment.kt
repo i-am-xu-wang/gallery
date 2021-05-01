@@ -1,5 +1,6 @@
 package edu.vt.cs.cs5254.gallery
 
+import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -10,8 +11,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.TextView
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -40,6 +39,7 @@ class PhotoGalleryFragment : Fragment() {
         ThumbnailDownloader(responseHandler) { photoHolder, bitmap ->
             val drawable = BitmapDrawable(resources, bitmap)
             photoHolder.bindDrawable(drawable)
+
         }
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
     }
@@ -77,8 +77,26 @@ class PhotoGalleryFragment : Fragment() {
     }
 
     private inner class PhotoHolder(itemBinding: ListItemGalleryBinding)
-        : RecyclerView.ViewHolder(itemBinding.root) {
+        : RecyclerView.ViewHolder(itemBinding.root),
+            View.OnClickListener {
+
+        private lateinit var galleryItem: GalleryItem
+
+        init {
+            itemView.setOnClickListener(this)
+        }
+
         val bindDrawable: (Drawable) -> Unit = itemBinding.root::setImageDrawable
+
+        fun bindGalleryItem(item: GalleryItem) {
+            galleryItem = item
+        }
+
+        override fun onClick(view: View) {
+            val intent = PhotoPageActivity
+                    .newIntent(requireContext(), galleryItem.photoPageUri)
+            startActivity(intent)
+        }
     }
 
     private inner class PhotoAdapter(private val galleryItems: List<GalleryItem>)
@@ -95,6 +113,7 @@ class PhotoGalleryFragment : Fragment() {
 
         override fun onBindViewHolder(holder: PhotoHolder, position: Int) {
             val galleryItem = galleryItems[position]
+            holder.bindGalleryItem(galleryItem)
             val placeholder: Drawable = ContextCompat.getDrawable(
                 requireContext(),
                 R.drawable.placeholder
