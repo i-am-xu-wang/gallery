@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment
 private const val ARG_URI = "photo_page_url"
 
 class PhotoPageFragment : Fragment() {
-
+//todo:use binding
     private lateinit var uri: Uri
     private lateinit var webView: WebView
     private lateinit var progressBar: ProgressBar
@@ -36,6 +36,11 @@ class PhotoPageFragment : Fragment() {
         progressBar = view.findViewById(R.id.progress_bar)
         progressBar.max = 100
         webView = view.findViewById(R.id.web_view)
+        //code for constrain the webview size
+//        webView.settings.loadWithOverviewMode = true
+//        webView.settings.useWideViewPort = true
+//        webView.settings.builtInZoomControls = true
+//        webView.settings.setSupportZoom(true)
         webView.settings.javaScriptEnabled = true
         webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(webView: WebView, newProgress: Int) {
