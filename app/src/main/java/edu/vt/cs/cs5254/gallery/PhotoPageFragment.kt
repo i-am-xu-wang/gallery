@@ -39,6 +39,7 @@ class PhotoPageFragment : Fragment() {
         webView.settings.javaScriptEnabled = true
         webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(webView: WebView, newProgress: Int) {
+
                 if (newProgress == 100) {
                     progressBar.visibility = View.GONE
                 } else {
