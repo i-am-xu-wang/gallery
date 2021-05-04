@@ -1,16 +1,15 @@
 package edu.vt.cs.cs5254.gallery
 
-import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -20,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import edu.vt.cs.cs5254.gallery.api.GalleryItem
 import edu.vt.cs.cs5254.gallery.databinding.FragmentPhotoGalleryBinding
 import edu.vt.cs.cs5254.gallery.databinding.ListItemGalleryBinding
+
 
 class PhotoGalleryFragment : Fragment() {
     private lateinit var photoGalleryViewModel: PhotoGalleryViewModel
@@ -33,34 +33,37 @@ class PhotoGalleryFragment : Fragment() {
         retainInstance = true
         photoGalleryViewModel =
                 ViewModelProvider(this).get(PhotoGalleryViewModel::class.java)
+        photoGalleryViewModel.loadPhotos()
 
         val responseHandler = Handler(Looper.myLooper()!!)
         thumbnailDownloader =
-        ThumbnailDownloader(responseHandler) { photoHolder, bitmap ->
-            val drawable = BitmapDrawable(resources, bitmap)
-            photoHolder.bindDrawable(drawable)
+                ThumbnailDownloader(responseHandler) { photoHolder, bitmap ->
+                    val drawable = BitmapDrawable(resources, bitmap)
+                    photoHolder.bindDrawable(drawable)
+                    photoGalleryViewModel.storeThumbnail(photoHolder.galleryItem.id, drawable)
 
-        }
+                }
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
     }
+
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View {
         viewLifecycleOwner.lifecycle.addObserver(
-                thumbnailDownloader.viewLifecycleObserver )
+                thumbnailDownloader.viewLifecycleObserver)
         _binding = FragmentPhotoGalleryBinding.inflate(inflater, container, false)
         val view = binding.root
         binding.photoRecyclerView.layoutManager = GridLayoutManager(context, 3)
         return view
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        photoGalleryViewModel.galleryItemLiveData.observe(
+        photoGalleryViewModel.galleryItemsLiveData.observe(
                 viewLifecycleOwner,
-                Observer {
-                    galleryItems ->
+                Observer { galleryItems ->
                     binding.photoRecyclerView.adapter = PhotoAdapter(galleryItems)
                 })
     }
@@ -68,19 +71,20 @@ class PhotoGalleryFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         viewLifecycleOwner.lifecycle.removeObserver(
-            thumbnailDownloader.viewLifecycleObserver )
+                thumbnailDownloader.viewLifecycleObserver)
     }
+
     override fun onDestroy() {
         super.onDestroy()
         lifecycle.removeObserver(
-            thumbnailDownloader.fragmentLifecycleObserver )
+                thumbnailDownloader.fragmentLifecycleObserver)
     }
 
     private inner class PhotoHolder(itemBinding: ListItemGalleryBinding)
         : RecyclerView.ViewHolder(itemBinding.root),
             View.OnClickListener {
 
-        private lateinit var galleryItem: GalleryItem
+        lateinit var galleryItem: GalleryItem
 
         init {
             itemView.setOnClickListener(this)
@@ -102,7 +106,7 @@ class PhotoGalleryFragment : Fragment() {
     private inner class PhotoAdapter(private val galleryItems: List<GalleryItem>)
         : RecyclerView.Adapter<PhotoHolder>() {
 
-        override fun onCreateViewHolder( parent: ViewGroup, viewType: Int
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int
         ): PhotoHolder {
             val itemBinding = ListItemGalleryBinding.inflate(
                     LayoutInflater.from(context), parent, false)
@@ -115,14 +119,15 @@ class PhotoGalleryFragment : Fragment() {
             val galleryItem = galleryItems[position]
             holder.bindGalleryItem(galleryItem)
             val placeholder: Drawable = ContextCompat.getDrawable(
-                requireContext(),
-                R.drawable.placeholder
+                    requireContext(),
+                    R.drawable.placeholder
             ) ?: ColorDrawable()
-            holder.bindDrawable(placeholder)
-            thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
+
+            holder.bindDrawable(galleryItem.drawable ?: placeholder)
+            if (galleryItem.drawable == null || galleryItem.drawable == placeholder) {
+                thumbnailDownloader.queueThumbnail(holder, galleryItem.url)
+            }
         }
     }
-    companion object {
-        fun newInstance() = PhotoGalleryFragment()
-    }
+
 }

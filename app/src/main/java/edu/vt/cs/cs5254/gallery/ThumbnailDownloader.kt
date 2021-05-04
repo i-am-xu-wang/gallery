@@ -64,6 +64,7 @@ class ThumbnailDownloader<in H>(
             }
         }
     }
+
     override fun quit(): Boolean {
         hasQuit = true
         return super.quit()

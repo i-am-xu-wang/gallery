@@ -16,7 +16,7 @@ class PhotoPageActivity : AppCompatActivity() {
         val currentFragment = fm.findFragmentById(R.id.fragment_container)
 
         if (currentFragment == null) {
-            val fragment = PhotoPageFragment.newInstance(intent.data!!)
+            val fragment = PhotoPageFragment.newInstance(intent.data as Uri)
             fm.beginTransaction()
                     .add(R.id.fragment_container, fragment)
                     .commit()
