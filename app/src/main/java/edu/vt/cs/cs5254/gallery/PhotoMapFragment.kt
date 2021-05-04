@@ -4,9 +4,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.GoogleMap
@@ -14,6 +12,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import edu.vt.cs.cs5254.gallery.api.FlickrFetchr
 import edu.vt.cs.cs5254.gallery.api.GalleryItem
 
 private const val TAG: String = "PhotoMapFragment"
@@ -25,7 +24,8 @@ class PhotoMapFragment : MapViewFragment(), GoogleMap.OnMarkerClickListener {
     var geoGalleryItemMap = emptyMap<String, GalleryItem>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // setHasOptionsMenu(true)
+        setHasOptionsMenu(true)
+
         photoMapViewModel =
                 ViewModelProvider(this).get(PhotoMapViewModel::class.java)
 
@@ -37,6 +37,20 @@ class PhotoMapFragment : MapViewFragment(), GoogleMap.OnMarkerClickListener {
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.top_reload_menu, menu)
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.reload_photo -> {
+                FlickrFetchr.fetchPhotos(true)
+                true
+            }
+
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -85,6 +99,7 @@ class PhotoMapFragment : MapViewFragment(), GoogleMap.OnMarkerClickListener {
         Log.i(TAG, "Gallery has has " + geoGalleryItemMap.size + " items")
 
         // remove all markers, overlays, etc. from the map
+        thumbnailDownloader.clearQueue()
         googleMap.clear()
 
         val bounds = LatLngBounds.Builder()

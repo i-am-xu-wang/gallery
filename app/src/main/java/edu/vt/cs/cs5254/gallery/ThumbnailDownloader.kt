@@ -90,5 +90,8 @@ class ThumbnailDownloader<in H>(
             onThumbnailDownloaded(holder, bitmap)
         })
     }
+    fun clearQueue(){
+        requestMap.clear()
+    }
 
 }

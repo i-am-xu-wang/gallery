@@ -28,6 +28,7 @@ object FlickrFetchr {
     }
 
     fun fetchPhotos(reload: Boolean = false) {
+
         if (galleryItemsLiveData.value != null && !reload) return
 
         val flickrRequest: Call<FlickrResponse> = flickrApi.fetchPhotos()
