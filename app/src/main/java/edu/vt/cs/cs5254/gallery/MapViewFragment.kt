@@ -36,11 +36,11 @@ open class MapViewFragment : Fragment() {
 
     @Suppress("SameParameterValue")
     protected fun onCreateMapView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-        mapLayoutResourceId: Int,
-        mapViewResourceId: Int
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?,
+            mapLayoutResourceId: Int,
+            mapViewResourceId: Int
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         var mapViewBundle: Bundle? = null
@@ -54,8 +54,8 @@ open class MapViewFragment : Fragment() {
     }
 
     fun onMapViewCreated(
-        view: View, savedInstanceState: Bundle?,
-        block: (GoogleMap) -> Unit
+            view: View, savedInstanceState: Bundle?,
+            block: (GoogleMap) -> Unit
     ) {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "Setting up map")
@@ -106,19 +106,21 @@ open class MapViewFragment : Fragment() {
         mapView.onLowMemory()
     }
 
+    protected fun mapIsInitialized() = this::googleMap.isInitialized
+
     /**
      * A utility function for setting bitmaps as map marker icons.
      * Defaults to 200dp square.
      */
     protected fun setMarkerIcon(
-        marker: Marker,
-        bitmap: Bitmap,
-        dstWidth: Int = 200,
-        dstHeight: Int = 200,
-        filter: Boolean = false
+            marker: Marker,
+            bitmap: Bitmap,
+            dstWidth: Int = 200,
+            dstHeight: Int = 200,
+            filter: Boolean = false
     ) {
         val scaledBitmap =
-            Bitmap.createScaledBitmap(bitmap, dstWidth, dstHeight, filter)
+                Bitmap.createScaledBitmap(bitmap, dstWidth, dstHeight, filter)
         marker.setIcon(BitmapDescriptorFactory.fromBitmap(scaledBitmap))
     }
 }

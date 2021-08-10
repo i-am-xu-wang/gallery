@@ -11,10 +11,10 @@ import androidx.core.content.ContextCompat
 
 class PictureUtil private constructor() {
 
-//  companion object {
-//
-//    private val placeholders = mutableMapOf<Context, Drawable>()
-//
+    companion object {
+
+        private val placeholders = mutableMapOf<Context, Drawable>()
+
 //    fun placeholder(context: Context): Drawable {
 //      if (placeholders[context] == null) {
 //        placeholders[context] = ContextCompat.getDrawable(
@@ -51,5 +51,5 @@ class PictureUtil private constructor() {
 //      drawable.draw(canvas)
 //      return bitmap
 //    }
-//  }
+    }
 }

@@ -2,6 +2,7 @@ package edu.vt.cs.cs5254.gallery.api
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
@@ -16,6 +17,8 @@ import retrofit2.Response
 object FlickrFetchr {
     private val TAG = "FlickrFetchr"
     private val flickrApi: FlickrApi
+    val galleryItemsLiveData: MutableLiveData<List<GalleryItem>> = MutableLiveData()
+
     init {
         val retrofit: Retrofit = Retrofit.Builder()
                 .baseUrl("https://api.flickr.com/")
@@ -23,31 +26,38 @@ object FlickrFetchr {
                 .build()
         flickrApi = retrofit.create(FlickrApi::class.java)
     }
-    fun fetchPhotos(): LiveData<List<GalleryItem>> {
-            val responseLiveData: MutableLiveData<List<GalleryItem>> = MutableLiveData()
-            val flickrRequest: Call<FlickrResponse> = flickrApi.fetchPhotos()
-            flickrRequest.enqueue(object : Callback<FlickrResponse> {
-                override fun onFailure(call: Call<FlickrResponse>, t: Throwable) {
-                    Log.e(TAG, "Failed to fetch photos", t)
-                }
 
-                override fun onResponse(
-                        call: Call<FlickrResponse>,
-                        response: Response<FlickrResponse>
-                ) {
-                    Log.d(TAG, "Response received")
-                    val flickrResponse: FlickrResponse? = response.body()
-                    val photoResponse: PhotoResponse? = flickrResponse?.photos
-                    var galleryItems: List<GalleryItem> = photoResponse?.galleryItems
-                            ?: mutableListOf()
-                    galleryItems = galleryItems.filterNot {
-                        it.url.isBlank()
-                    }
-                    responseLiveData.value = galleryItems
+    fun fetchPhotos(reload: Boolean = false) {
+        if (galleryItemsLiveData.value != null && !reload) return
+
+        val flickrRequest: Call<FlickrResponse> = flickrApi.fetchPhotos()
+
+        flickrRequest.enqueue(object : Callback<FlickrResponse> {
+            override fun onFailure(call: Call<FlickrResponse>, t: Throwable) {
+                Log.e(TAG, "Failed to fetch photos", t)
+            }
+
+            override fun onResponse(
+                    call: Call<FlickrResponse>,
+                    response: Response<FlickrResponse>
+            ) {
+                Log.d(TAG, "Response received")
+                val flickrResponse: FlickrResponse? = response.body()
+                val photoResponse: PhotoResponse? = flickrResponse?.photos
+                var galleryItems: List<GalleryItem> = photoResponse?.galleryItems
+                        ?: mutableListOf()
+                galleryItems = galleryItems.filterNot {
+                    it.url.isBlank()
                 }
-            })
-            return responseLiveData
-        }
+                galleryItemsLiveData.value = galleryItems
+            }
+        })
+    }
+
+    fun storeThumbnail(id: String, drawable: Drawable) {
+        galleryItemsLiveData.value?.find { it.id == id }?.drawable = drawable
+    }
+
     @WorkerThread
     fun fetchPhoto(url: String): Bitmap? {
         val response: Response<ResponseBody> = flickrApi.fetchUrlBytes(url).execute()
@@ -55,4 +65,4 @@ object FlickrFetchr {
         Log.i(TAG, "Decoded bitmap=$bitmap from Response=$response")
         return bitmap
     }
-    }
+}
