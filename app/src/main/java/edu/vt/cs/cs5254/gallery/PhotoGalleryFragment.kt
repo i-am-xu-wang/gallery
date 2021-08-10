@@ -6,16 +6,14 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import edu.vt.cs.cs5254.gallery.api.FlickrFetchr
 import edu.vt.cs.cs5254.gallery.api.GalleryItem
 import edu.vt.cs.cs5254.gallery.databinding.FragmentPhotoGalleryBinding
 import edu.vt.cs.cs5254.gallery.databinding.ListItemGalleryBinding
@@ -30,7 +28,9 @@ class PhotoGalleryFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
         retainInstance = true
+
         photoGalleryViewModel =
                 ViewModelProvider(this).get(PhotoGalleryViewModel::class.java)
         photoGalleryViewModel.loadPhotos()
@@ -44,6 +44,21 @@ class PhotoGalleryFragment : Fragment() {
 
                 }
         lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.top_reload_menu, menu)
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.reload_photo -> {
+                FlickrFetchr.fetchPhotos(true)
+                true
+            }
+
+            else -> return super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onCreateView(
